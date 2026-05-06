@@ -49,6 +49,8 @@
             return new BolsteringAffix(val1, val2 > 0.0f ? val2 : 20.0f, 20.0f);
         case AFFIX_TYPE_SANGUINE:
             return new SanguineAffix(val1 > 0.0f ? val1 : 6.0f, val2 > 0.0f ? uint32(val2 * 1000.0f) : 12000u, 4.0f);
+        case AFFIX_TYPE_BURSTING:
+            return new BurstingAffix(val1 > 0.0f ? val1 : 2.5f, val2 > 0.0f ? uint32(val2 * 1000.0f) : 5000u, 6);
         default:
             return nullptr;
     }
@@ -643,5 +645,71 @@ std::string SanguineAffix::ToString() const
     oss << " that damages players and heals nearby enemies for ";
     oss << MythicPlus::Utils::FormatFloat(effectPct);
     oss << "% max health per second";
+    return oss.str();
+}
+
+void BurstingAffix::HandlePeriodicEffect(Unit* unit, uint32 diff)
+{
+    Player* player = unit ? unit->ToPlayer() : nullptr;
+    if (!player)
+        return;
+
+    uint64 guid = player->GetGUID().GetRawValue();
+    auto itr = playerStates.find(guid);
+    if (itr == playerStates.end())
+        return;
+
+    if (!sMythicPlus->IsInMythicPlus(player) || player->isDead())
+    {
+        playerStates.erase(itr);
+        return;
+    }
+
+    BurstingState& state = itr->second;
+    state.remainingMs = state.remainingMs > diff ? state.remainingMs - diff : 0;
+    state.tickTimer += diff;
+
+    if (state.tickTimer >= 1000)
+    {
+        state.tickTimer %= 1000;
+        uint32 damage = std::max<uint32>(1, uint32(player->GetMaxHealth() * (effectPct / 100.0f) * state.stacks));
+        player->ModifyHealth(-int32(damage));
+    }
+
+    if (state.remainingMs == 0)
+        playerStates.erase(guid);
+}
+
+void BurstingAffix::HandleUnitDeath(Creature* creature, Unit* /*killer*/)
+{
+    if (!creature || creature->IsDungeonBoss() || sMythicPlus->IsFinalBoss(creature->GetEntry()))
+        return;
+
+    if (!sMythicPlus->IsInMythicPlus(creature))
+        return;
+
+    Map::PlayerList const& players = creature->GetMap()->GetPlayers();
+    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+    {
+        Player* player = itr->GetSource();
+        if (!player || player->isDead())
+            continue;
+
+        BurstingState& state = playerStates[player->GetGUID().GetRawValue()];
+        state.stacks = std::min<uint8>(maxStacks, state.stacks + 1);
+        state.remainingMs = durationMs;
+    }
+}
+
+std::string BurstingAffix::ToString() const
+{
+    std::ostringstream oss;
+    oss << "Bursting: slain trash applies a stacking bleed for ";
+    oss << secsToTimeString(durationMs / 1000);
+    oss << " that deals ";
+    oss << MythicPlus::Utils::FormatFloat(effectPct);
+    oss << "% max health per stack each second (up to ";
+    oss << uint32(maxStacks);
+    oss << " stacks)";
     return oss.str();
 }

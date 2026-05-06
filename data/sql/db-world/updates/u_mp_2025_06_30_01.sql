@@ -19,6 +19,9 @@ ON DUPLICATE KEY UPDATE
     `timelimit` = VALUES(`timelimit`),
     `random_affix_count` = VALUES(`random_affix_count`);
 
+DELETE FROM `mythic_plus_affix` WHERE `lvl` = 7;
+DELETE FROM `mythic_plus_level_rewards` WHERE `lvl` = 7;
+
 INSERT INTO `mythic_plus_affix` (`lvl`, `affixtype`, `val1`) VALUES (7, 1, 0.2);
 INSERT INTO `mythic_plus_affix` (`lvl`, `affixtype`, `val1`) VALUES (7, 2, 0.15);
 INSERT INTO `mythic_plus_affix` (`lvl`, `affixtype`, `val1`) VALUES (7, 3, 30);
@@ -26,4 +29,4 @@ INSERT INTO `mythic_plus_affix` (`lvl`, `affixtype`, `val1`) VALUES (7, 4, 30);
 INSERT INTO `mythic_plus_affix` (`lvl`, `affixtype`, `val1`, `val2`) VALUES (7, 6, 25000, 65);
 
 INSERT INTO `mythic_plus_level_rewards` (`lvl`, `rewardtype`, `val1`, `val2`) VALUES (7, 0, 30000000, null);
-INSERT INTO `mythic_plus_level_rewards` (`lvl`, `rewardtype`, `val1`, `val2`) VALUES (7, 1, 29434, 30);
+INSERT INTO `mythic_plus_level_rewards` (`lvl`, `rewardtype`, `val1`, `val2`) VALUES (7, 1, 70002, 30);

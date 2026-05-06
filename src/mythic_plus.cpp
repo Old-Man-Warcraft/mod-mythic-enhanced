@@ -814,7 +814,12 @@ void MythicPlus::LoadMythicLevelsFromDB()
 
         if (randomAffixCount > 0)
         {
-            std::vector<MythicAffix*> randomAffixes = BuildRandomAffixesForLevel(lvl, randomAffixCount);
+            std::set<uint16> usedAffixTypes;
+            for (MythicAffix const* affix : level.affixes)
+                if (affix)
+                    usedAffixTypes.insert(affix->GetAffixType());
+
+            std::vector<MythicAffix*> randomAffixes = BuildRandomAffixesForLevel(lvl, randomAffixCount, usedAffixTypes);
             for (auto* a : randomAffixes)
                 level.affixes.push_back(a);
         }
@@ -1211,16 +1216,24 @@ void MythicPlus::DistributeItemUpgradeBossTokens(Map* map, bool finalBoss) const
     if (!sObjectMgr->GetItemTemplate(itemUpgradeTokenEntry))
         return;
 
+    MapData* mapData = GetMapData(map, false);
+    uint32 tokenCount = itemUpgradeTokenCount;
+    if (mapData && mapData->mythicLevel)
+        tokenCount = CalculateItemUpgradeTokenCount(mapData->mythicLevel->level);
+
+    if (tokenCount == 0)
+        return;
+
     const Map::PlayerList& players = map->GetPlayers();
     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
     {
         if (Player* player = itr->GetSource())
         {
-            if (!DeliverMythicStacksOrMail(player, itemUpgradeTokenEntry, itemUpgradeTokenCount,
+            if (!DeliverMythicStacksOrMail(player, itemUpgradeTokenEntry, tokenCount,
                     "Mythic Plus",
                     "Your Mythic+ item upgrade token could not be placed in your bags. It is attached to this letter."))
                 LOG_ERROR("module", "MythicPlus: failed to deliver item upgrade token {} x{} to {}",
-                    itemUpgradeTokenEntry, itemUpgradeTokenCount, player->GetName());
+                    itemUpgradeTokenEntry, tokenCount, player->GetName());
         }
     }
 }
@@ -1339,57 +1352,21 @@ uint64 MythicPlus::CalculateActiveRotationState() const
     return state;
 }
 
-std::vector<MythicAffix*> MythicPlus::BuildRandomAffixesForLevel(uint32 mythicLevel, uint32 maxCount) const
+std::vector<MythicAffix*> MythicPlus::BuildRandomAffixesForLevel(uint32 mythicLevel, uint32 maxCount, std::set<uint16> const& excludedAffixTypes) const
 {
     std::vector<MythicAffix*> result;
     if (maxCount == 0)
         return result;
 
-    uint64 now = GameTime::GetGameTime().count();
-    std::set<uint32> usedAffixTypes;
-    std::map<uint32, MythicPlusRotationEntry> activeRotationsBySlot;
-
-    for (MythicPlusRotationEntry const& rotation : mythicPlusRotations)
-    {
-        if (!rotation.enabled)
-            continue;
-
-        if (rotation.startUnix > now || rotation.endUnix <= now)
-            continue;
-
-        if (rotation.affixSlot == 0 || rotation.affixSlot > maxCount)
-            continue;
-
-        auto currentItr = activeRotationsBySlot.find(rotation.affixSlot);
-        if (currentItr == activeRotationsBySlot.end() || currentItr->second.startUnix < rotation.startUnix)
-            activeRotationsBySlot[rotation.affixSlot] = rotation;
-    }
-
-    for (uint32 slot = 1; slot <= maxCount; ++slot)
-    {
-        auto itr = activeRotationsBySlot.find(slot);
-        if (itr == activeRotationsBySlot.end())
-            continue;
-
-        MythicAffix* affix = MythicAffix::AffixFactory((MythicAffixType)itr->second.affixType, itr->second.val1, itr->second.val2);
-        if (!affix)
-            continue;
-
-        result.push_back(affix);
-        usedAffixTypes.insert(itr->second.affixType);
-    }
-
-    if (result.size() >= maxCount)
-        return result;
-
     std::vector<uint32> pool;
     for (uint32 affixType : MythicAffix::RandomAffixes)
-        if (usedAffixTypes.find(affixType) == usedAffixTypes.end())
+        if (excludedAffixTypes.find(uint16(affixType)) == excludedAffixTypes.end())
             pool.push_back(affixType);
 
     if (pool.empty())
         return result;
 
+    uint64 now = GameTime::GetGameTime().count();
     uint64 seasonSeed = activeSeasonId;
     if (seasonSeed == 0)
     {
@@ -1397,9 +1374,10 @@ std::vector<MythicAffix*> MythicPlus::BuildRandomAffixesForLevel(uint32 mythicLe
         seasonSeed = BuildUtcMonthStart(uint32(utcNow.tm_year + 1900), uint32(utcNow.tm_mon + 1));
     }
 
-    std::mt19937_64 engine(seasonSeed ^ (uint64(mythicLevel) << 32) ^ maxCount);
+    uint64 seed = activeRotationState != 0 ? activeRotationState : seasonSeed;
+    std::mt19937_64 engine(seed ^ (uint64(mythicLevel) << 32) ^ maxCount);
     std::vector<uint32> chosen;
-    std::ranges::sample(pool, std::back_inserter(chosen), std::min<std::size_t>(pool.size(), maxCount - result.size()), engine);
+    std::ranges::sample(pool, std::back_inserter(chosen), std::min<std::size_t>(pool.size(), maxCount), engine);
     for (uint32 affixType : chosen)
     {
         MythicAffix* affix = MythicAffix::AffixFactory((MythicAffixType)affixType);
@@ -1886,6 +1864,21 @@ bool MythicPlus::ShouldReplaceLeaderboardEntry(MythicPlusLeaderboardEntry const&
         return candidate.deaths < existing.deaths;
 
     return false;
+}
+
+uint32 MythicPlus::CalculateItemUpgradeTokenCount(uint32 mythicLevel) const
+{
+    uint32 baseCount = std::max<uint32>(itemUpgradeTokenCount, 1u);
+    uint32 clampedLevel = std::clamp(std::max(mythicLevel, MIN_KEYSTONE_LEVEL), MIN_KEYSTONE_LEVEL, MAX_KEYSTONE_LEVEL);
+
+    if (clampedLevel >= 20)
+        return baseCount * 4;
+    if (clampedLevel >= 15)
+        return baseCount * 3;
+    if (clampedLevel >= 10)
+        return baseCount * 2;
+
+    return baseCount;
 }
 
 void MythicPlus::SubmitCompletedRunToLeaderboard(uint32 mapId, Difficulty mapDiff, uint32 mythicLevel,

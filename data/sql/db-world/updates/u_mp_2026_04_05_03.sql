@@ -29,17 +29,17 @@ INSERT INTO `mythic_plus_season_reward` (`rank_start`, `rank_end`, `rewardtype`,
 SELECT 1, 1, 0, 50000000, NULL, 'Mythic season rewards', 'Congratulations on finishing rank #1 in the Mythic season. Your rewards are attached.'
 WHERE NOT EXISTS (SELECT 1 FROM `mythic_plus_season_reward`);
 INSERT INTO `mythic_plus_season_reward` (`rank_start`, `rank_end`, `rewardtype`, `val1`, `val2`, `mail_subject`, `mail_body`)
-SELECT 1, 1, 1, 29434, 50, 'Mythic season rewards', 'Congratulations on finishing rank #1 in the Mythic season. Your rewards are attached.'
-WHERE NOT EXISTS (SELECT 1 FROM `mythic_plus_season_reward` WHERE `rank_start` = 1 AND `rank_end` = 1 AND `rewardtype` = 1 AND `val1` = 29434 AND `val2` = 50);
+SELECT 1, 1, 1, 70002, 50, 'Mythic season rewards', 'Congratulations on finishing rank #1 in the Mythic season. Your rewards are attached.'
+WHERE NOT EXISTS (SELECT 1 FROM `mythic_plus_season_reward` WHERE `rank_start` = 1 AND `rank_end` = 1 AND `rewardtype` = 1 AND `val1` = 70002 AND `val2` = 50);
 INSERT INTO `mythic_plus_season_reward` (`rank_start`, `rank_end`, `rewardtype`, `val1`, `val2`, `mail_subject`, `mail_body`)
 SELECT 2, 3, 0, 25000000, NULL, 'Mythic season rewards', 'Congratulations on finishing in the top 3 of the Mythic season. Your rewards are attached.'
 WHERE NOT EXISTS (SELECT 1 FROM `mythic_plus_season_reward` WHERE `rank_start` = 2 AND `rank_end` = 3 AND `rewardtype` = 0 AND `val1` = 25000000);
 INSERT INTO `mythic_plus_season_reward` (`rank_start`, `rank_end`, `rewardtype`, `val1`, `val2`, `mail_subject`, `mail_body`)
-SELECT 2, 3, 1, 29434, 30, 'Mythic season rewards', 'Congratulations on finishing in the top 3 of the Mythic season. Your rewards are attached.'
-WHERE NOT EXISTS (SELECT 1 FROM `mythic_plus_season_reward` WHERE `rank_start` = 2 AND `rank_end` = 3 AND `rewardtype` = 1 AND `val1` = 29434 AND `val2` = 30);
+SELECT 2, 3, 1, 70002, 30, 'Mythic season rewards', 'Congratulations on finishing in the top 3 of the Mythic season. Your rewards are attached.'
+WHERE NOT EXISTS (SELECT 1 FROM `mythic_plus_season_reward` WHERE `rank_start` = 2 AND `rank_end` = 3 AND `rewardtype` = 1 AND `val1` = 70002 AND `val2` = 30);
 INSERT INTO `mythic_plus_season_reward` (`rank_start`, `rank_end`, `rewardtype`, `val1`, `val2`, `mail_subject`, `mail_body`)
 SELECT 4, 10, 0, 10000000, NULL, 'Mythic season rewards', 'Congratulations on finishing in the top 10 of the Mythic season. Your rewards are attached.'
 WHERE NOT EXISTS (SELECT 1 FROM `mythic_plus_season_reward` WHERE `rank_start` = 4 AND `rank_end` = 10 AND `rewardtype` = 0 AND `val1` = 10000000);
 INSERT INTO `mythic_plus_season_reward` (`rank_start`, `rank_end`, `rewardtype`, `val1`, `val2`, `mail_subject`, `mail_body`)
-SELECT 4, 10, 1, 29434, 15, 'Mythic season rewards', 'Congratulations on finishing in the top 10 of the Mythic season. Your rewards are attached.'
-WHERE NOT EXISTS (SELECT 1 FROM `mythic_plus_season_reward` WHERE `rank_start` = 4 AND `rank_end` = 10 AND `rewardtype` = 1 AND `val1` = 29434 AND `val2` = 15);
+SELECT 4, 10, 1, 70002, 15, 'Mythic season rewards', 'Congratulations on finishing in the top 10 of the Mythic season. Your rewards are attached.'
+WHERE NOT EXISTS (SELECT 1 FROM `mythic_plus_season_reward` WHERE `rank_start` = 4 AND `rank_end` = 10 AND `rewardtype` = 1 AND `val1` = 70002 AND `val2` = 15);

@@ -6,6 +6,7 @@
 #define _MYTHIC_PLUS_H_
 
 #include <random>
+#include <set>
 #include "Player.h"
 
 class MythicAffix;
@@ -442,10 +443,11 @@ private:
     MythicAffix* BuildScheduledAffixForSlot(uint32 affixSlot, std::set<uint16> const& usedAffixTypes) const;
     bool MythicLevelHasAffix(MythicLevel const& mythicLevel, uint16 affixType) const;
     void ApplyRetailAffixCadence(MythicLevel& mythicLevel) const;
-    std::vector<MythicAffix*> BuildRandomAffixesForLevel(uint32 mythicLevel, uint32 maxCount) const;
+    std::vector<MythicAffix*> BuildRandomAffixesForLevel(uint32 mythicLevel, uint32 maxCount, std::set<uint16> const& excludedAffixTypes) const;
     void RewardKeystone(Player* player) const;
     bool ShouldReplaceLeaderboardEntry(MythicPlusLeaderboardEntry const& existing, MythicPlusLeaderboardEntry const& candidate) const;
     std::string BuildLeaderboardGroupMembers(std::vector<std::pair<uint32, std::string>> const& players) const;
+    uint32 CalculateItemUpgradeTokenCount(uint32 mythicLevel) const;
 };
 
 #define sMythicPlus MythicPlus::instance()

@@ -60,7 +60,12 @@ MythicPlus.ItemUpgradeTokenEntry = 0
 
 #
 #    MythicPlus.ItemUpgradeTokenCount
-#        Description: How many ItemUpgradeTokenEntry to give per boss kill (when enabled).
+#        Description: Base number of ItemUpgradeTokenEntry to give per boss kill (when enabled).
+#                     Actual rewards scale by Mythic key tier:
+#                     +2 to +9   = base x1
+#                     +10 to +14 = base x2
+#                     +15 to +19 = base x3
+#                     +20        = base x4
 #        Default:     1
 #
 

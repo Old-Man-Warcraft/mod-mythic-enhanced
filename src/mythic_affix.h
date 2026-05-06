@@ -23,6 +23,7 @@ enum MythicAffixType
     AFFIX_TYPE_TYRANNICAL,
     AFFIX_TYPE_BOLSTERING,
     AFFIX_TYPE_SANGUINE,
+    AFFIX_TYPE_BURSTING,
     MAX_AFFIX_TYPE
 };
 
@@ -51,8 +52,8 @@ public:
 protected:
     static bool IsCreatureProcessed(Creature* creature);
 public:
-    static constexpr uint32 RANDOM_AFFIX_MAX_COUNT = 3;
-    static constexpr uint32 RandomAffixes[RANDOM_AFFIX_MAX_COUNT] = { AFFIX_TYPE_RANDOM_ENEMY_ENRAGE, AFFIX_TYPE_RANDOM_ENTANGLING_ROOTS, AFFIX_TYPE_SANGUINE };
+    static constexpr uint32 RANDOM_AFFIX_MAX_COUNT = 4;
+    static constexpr uint32 RandomAffixes[RANDOM_AFFIX_MAX_COUNT] = { AFFIX_TYPE_RANDOM_ENEMY_ENRAGE, AFFIX_TYPE_RANDOM_ENTANGLING_ROOTS, AFFIX_TYPE_SANGUINE, AFFIX_TYPE_BURSTING };
 };
 
 class HealthIncreaseAffix : public MythicAffix
@@ -342,6 +343,40 @@ private:
     float radius;
     std::vector<SanguinePool> activePools;
     std::unordered_map<uint64, uint32> unitTickTimers;
+};
+
+class BurstingAffix : public MythicAffix
+{
+public:
+    BurstingAffix(float effectPct, uint32 durationMs, uint8 maxStacks)
+        : effectPct(effectPct), durationMs(durationMs), maxStacks(maxStacks) {}
+
+    MythicAffixType GetAffixType() const override
+    {
+        return AFFIX_TYPE_BURSTING;
+    }
+
+    bool IsRandom() const override
+    {
+        return true;
+    }
+
+    void HandlePeriodicEffect(Unit* unit, uint32 diff) override;
+    void HandleUnitDeath(Creature* creature, Unit* killer) override;
+    std::string ToString() const override;
+
+private:
+    struct BurstingState
+    {
+        uint8 stacks = 0;
+        uint32 remainingMs = 0;
+        uint32 tickTimer = 0;
+    };
+
+    float effectPct;
+    uint32 durationMs;
+    uint8 maxStacks;
+    std::unordered_map<uint64, BurstingState> playerStates;
 };
 
 #endif

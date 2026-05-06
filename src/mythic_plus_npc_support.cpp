@@ -918,6 +918,12 @@ void MythicPlusNpcSupport::AddRandomAfixes(Player* player)
     infoIdnt->optionIcon = GOSSIP_ICON_CHAT;
     pagedData.data.push_back(infoIdnt);
 
+    Identifier* wildcardIdnt = new Identifier();
+    wildcardIdnt->id = id++;
+    wildcardIdnt->optionIcon = GOSSIP_ICON_CHAT;
+    wildcardIdnt->uiName = "High keys add wildcard pressure affixes from a deterministic seasonal pool: +10 grants one extra, +16 grants two.";
+    pagedData.data.push_back(wildcardIdnt);
+
     static char const* const slotPoolLines[] = {
         "Slot 1 (+2): Fortified or Tyrannical",
         "Slot 2 (+7): Bolstering or Sanguine",
@@ -1018,7 +1024,8 @@ void MythicPlusNpcSupport::AddHelpGuide(Player* player)
         "Set your Mythic+ keystone here while you are |cffff9933not in a group|r. In a party, the |cffff9933leader's|r keystone is used when the run starts.",
         "Get a keystone from this NPC (if enabled), then enter a listed dungeon on the correct difficulty.",
         "Retail-style cadence here is |cffff9933+2|r baseline affix, |cffff9933+7|r second affix, |cffff9933+14|r third affix, and |cffff9933+20|r a seasonal/special affix.",
-        "|cffff9933Deaths|r add 5 seconds each. Low keys can jump by +2 or +3, +10 to +14 can gain up to +2, and +15 or higher upgrades by +1 only; finishing overtime still depletes by one level.",
+        "|cffff9933High keys|r now pick up wildcard affixes from a seasonal pool: |cffff9933+10|r adds one extra and |cffff9933+16|r adds two. Bursting joins Enrage, Roots, and Sanguine in that pool.",
+        "|cffff9933Deaths|r add the configured penalty each; in the shipped config that is |cffff993315 seconds|r. Low keys can jump by +2 or +3, +10 to +14 can gain up to +2, and +15 or higher upgrades by +1 only; finishing overtime still depletes by one level.",
         "|cffff9933Rating|r now leans harder on higher keys: timed +15 to +20 runs earn extra score, while deaths cost more rating the higher you climb.",
         "Each |cffff9933season|r has its own score and leaderboards. Old seasons stay in |cffff9933archives|r under season info.",
         "Commands: |cffcccccc.mythic info|r and |cffcccccc.mythic reload|r (GM). With the AIO addon: |cffcccccc/mythiclb|r or |cffcccccc/mplb|r for a leaderboard window.",
